@@ -29,11 +29,15 @@ export async function createEditCabin(newCabin, editId) {
   }
 
   //====  Edit existing cabin ====
+  console.log(editId);
 
-  if (editId)
+  if (editId) {
+    console.log(newCabin);
+
     query = query
       .update({ ...newCabin, image: newCabin.newCabinData.image })
       .eq("id", editId);
+  }
 
   const { data, error } = await query.select().single();
 
