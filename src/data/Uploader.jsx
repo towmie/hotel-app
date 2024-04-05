@@ -53,8 +53,6 @@ async function createBookings() {
     .order("id");
   const allCabinIds = cabinsIds.map((cabin) => cabin.id);
 
-  console.log(guestsIds);
-
   const finalBookings = bookings.map((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
     const cabin = cabins.at(booking.cabin_id - 1);
