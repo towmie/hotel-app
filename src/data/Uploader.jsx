@@ -55,17 +55,18 @@ async function createBookings() {
 
   const finalBookings = bookings.map((booking) => {
     // Here relying on the order of cabins, as they don't have and ID yet
-    const cabin = cabins.at(booking.cabin_id - 1);
+
+    const cabin = cabins.at(booking.cabin_id);
+
+    console.log(cabin);
+
     const number_of_nights = subtractDates(
       booking.end_date,
       booking.start_date
     );
-    const cabin_price =
-      number_of_nights * (cabin.regular_price - cabin.discount);
-    const extras_price = booking.has_breakfast
-      ? number_of_nights * 15 * booking.num_guests
-      : 0; // hardcoded breakfast price
-    const total_price = cabin_price + extras_price;
+    const cabin_price = 0;
+    const extras_price = 0;
+    const total_price = 0;
 
     let status;
     if (
@@ -85,6 +86,17 @@ async function createBookings() {
       !isToday(new Date(booking.start_date))
     )
       status = "checked-in";
+
+    console.log({
+      ...booking,
+      number_of_nights,
+      cabin_price,
+      extras_price,
+      total_price,
+      guest_id: allGuestIds.at(booking.guestId - 1),
+      cabin_id: allCabinIds.at(booking.cabinId - 1),
+      status,
+    });
 
     return {
       ...booking,
