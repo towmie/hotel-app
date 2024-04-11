@@ -3,15 +3,17 @@ import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
+import { useSignUp } from "./useSignUp";
 
 // Email regex: /\S+@\S+\.\S+/
 
 function SignupForm() {
-  const { register, formState, getValues, handleSubmit } = useForm();
+  const { register, formState, getValues, handleSubmit, reset } = useForm();
   const { errors } = formState;
+  const { signUp, isLoading } = useSignUp();
 
   function onSubmit(data) {
-    console.log(data);
+    signUp(data, { onSettled: reset });
   }
 
   return (
@@ -20,6 +22,7 @@ function SignupForm() {
         <Input
           type="text"
           id="full_name"
+          disabled={isLoading}
           {...register("full_name", { required: "This field is required" })}
         />
       </FormRow>
@@ -28,6 +31,7 @@ function SignupForm() {
         <Input
           type="email"
           id="email"
+          disabled={isLoading}
           {...register("email", {
             required: "This field is required",
             pattern: {
@@ -45,6 +49,7 @@ function SignupForm() {
         <Input
           type="password"
           id="password"
+          disabled={isLoading}
           {...register("password", {
             required: "This field is required",
             minLength: {
@@ -59,6 +64,7 @@ function SignupForm() {
         <Input
           type="password"
           id="passwordConfirm"
+          disabled={isLoading}
           {...register("passwordConfirm", {
             required: "This field is required",
             validate: (value) =>
