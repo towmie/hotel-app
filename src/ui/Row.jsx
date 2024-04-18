@@ -15,9 +15,11 @@ const Row = styled.div`
     css`
       flex-direction: column;
       gap: 1.6rem;
-      justify-content: space-between;
-      align-items: center;
     `}
 `;
+
+Row.defaultProps = {
+  type: "vertical",
+};
 
 export default Row;
