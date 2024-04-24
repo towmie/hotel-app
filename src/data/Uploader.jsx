@@ -5,68 +5,25 @@ import Button from "../ui/Button";
 import { subtractDates } from "../utils/helpers";
 
 import { bookings } from "./data-bookings";
-import { cabins } from "./data-cabins";
-import { guests } from "./data-guests";
-
-// const originalSettings = {
-//   minBookingLength: 3,
-//   maxBookingLength: 30,
-//   maxGuestsPerBooking: 10,
-//   breakfastPrice: 15,
-// };
-
-async function deleteGuests() {
-  const { error } = await supabase.from("Guests").delete().gt("id", 0);
-  if (error) console.log(error.message);
-}
-
-async function deleteCabins() {
-  const { error } = await supabase.from("Cabins").delete().gt("id", 0);
-  if (error) console.log(error.message);
-}
+import { getCabins } from "../services/apiCabins";
 
 async function deleteBookings() {
   const { error } = await supabase.from("bookings").delete().gt("id", 0);
   if (error) console.log(error.message);
 }
 
-async function createGuests() {
-  const { error } = await supabase.from("Guests").insert(guests);
-  if (error) console.log(error.message);
-}
-
-async function createCabins() {
-  const { error } = await supabase.from("Cabins").insert(cabins);
-  if (error) console.log(error.message);
-}
-
 async function createBookings() {
-  // Bookings need a guestId and a cabinId. We can't tell Supabase IDs for each object, it will calculate them on its own. So it might be different for different people, especially after multiple uploads. Therefore, we need to first get all guestIds and cabinIds, and then replace the original IDs in the booking data with the actual ones from the DB
-  const { data: guestsIds } = await supabase
-    .from("Guests")
-    .select("id")
-    .order("id");
-  const allGuestIds = guestsIds.map((cabin) => cabin.id);
-  const { data: cabinsIds } = await supabase
-    .from("Cabins")
-    .select("id")
-    .order("id");
-  const allCabinIds = cabinsIds.map((cabin) => cabin.id);
+  const cabins = await getCabins();
 
   const finalBookings = bookings.map((booking) => {
-    // Here relying on the order of cabins, as they don't have and ID yet
+    const [cabin] = cabins.filter((el) => el.id === booking.cabin_id);
 
-    const cabin = cabins.at(booking.cabin_id);
-
-    console.log(cabin);
-
-    const number_of_nights = subtractDates(
-      booking.end_date,
-      booking.start_date
-    );
-    const cabin_price = 0;
-    const extras_price = 0;
-    const total_price = 0;
+    const num_nights = subtractDates(booking.end_date, booking.start_date);
+    const cabin_price = num_nights * (cabin.regular_price - cabin.discount);
+    const extras_price = booking.has_breakfast
+      ? num_nights * 15 * booking.num_guests
+      : 0;
+    const total_price = cabin_price + extras_price;
 
     let status;
     if (
@@ -87,30 +44,17 @@ async function createBookings() {
     )
       status = "checked-in";
 
-    console.log({
-      ...booking,
-      number_of_nights,
-      cabin_price,
-      extras_price,
-      total_price,
-      guest_id: allGuestIds.at(booking.guestId - 1),
-      cabin_id: allCabinIds.at(booking.cabinId - 1),
-      status,
-    });
-
     return {
       ...booking,
-      number_of_nights,
+      num_nights,
       cabin_price,
       extras_price,
       total_price,
-      guest_id: allGuestIds.at(booking.guestId - 1),
-      cabin_id: allCabinIds.at(booking.cabinId - 1),
+      guest_id: booking.guest_id,
+      cabin_id: cabin.id,
       status,
     };
   });
-
-  console.log(finalBookings);
 
   const { error } = await supabase.from("bookings").insert(finalBookings);
   if (error) console.log(error.message);
@@ -118,21 +62,6 @@ async function createBookings() {
 
 function Uploader() {
   const [isLoading, setIsLoading] = useState(false);
-
-  async function uploadAll() {
-    setIsLoading(true);
-    // Bookings need to be deleted FIRST
-    await deleteBookings();
-    await deleteGuests();
-    await deleteCabins();
-
-    // Bookings need to be created LAST
-    await createGuests();
-    await createCabins();
-    await createBookings();
-
-    setIsLoading(false);
-  }
 
   async function uploadBookings() {
     setIsLoading(true);
@@ -155,10 +84,6 @@ function Uploader() {
       }}
     >
       <h3>SAMPLE DATA</h3>
-
-      <Button onClick={uploadAll} disabled={isLoading}>
-        Upload ALL
-      </Button>
 
       <Button onClick={uploadBookings} disabled={isLoading}>
         Upload bookings ONLY

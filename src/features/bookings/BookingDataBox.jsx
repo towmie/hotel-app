@@ -107,7 +107,7 @@ function BookingDataBox({ booking }) {
     created_at,
     start_date,
     end_date,
-    number_of_nights,
+    num_nights,
     num_guests,
     cabin_price,
     extras_price,
@@ -125,7 +125,7 @@ function BookingDataBox({ booking }) {
         <div>
           <HiOutlineHomeModern />
           <p>
-            {number_of_nights} nights in Cabin <span>{cabinName}</span>
+            {num_nights} nights in Cabin <span>{cabinName}</span>
           </p>
         </div>
 
