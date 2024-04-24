@@ -1,17 +1,12 @@
 import styled from "styled-components";
 import Heading from "../../ui/Heading";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
   Cell,
   Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
   Tooltip,
-  XAxis,
-  YAxis,
 } from "recharts";
 import { useDarkMode } from "../context/DarkModeContext";
 
